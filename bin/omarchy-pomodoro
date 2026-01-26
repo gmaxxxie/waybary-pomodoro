@@ -1,0 +1,251 @@
+#!/usr/bin/env bash
+# omarchy-pomodoro - Pomodoro timer controller
+# Usage: omarchy-pomodoro [start|pause|stop|skip|reset|status]
+
+set -euo pipefail
+
+# Config
+STATE_FILE="/tmp/pomodoro-state"
+WORK_DURATION=$((25 * 60))      # 25 minutes
+SHORT_BREAK=$((5 * 60))         # 5 minutes
+LONG_BREAK=$((15 * 60))         # 15 minutes
+POMODOROS_UNTIL_LONG=4          # Long break after 4 pomodoros
+
+# Notification sound (system bell)
+play_sound() {
+    local sound_file
+    # Try common notification sounds
+    for sound_file in \
+        /usr/share/sounds/freedesktop/stereo/complete.oga \
+        /usr/share/sounds/freedesktop/stereo/bell.oga \
+        /usr/share/sounds/freedesktop/stereo/message.oga \
+        /usr/share/sounds/Yaru/stereo/complete.oga; do
+        if [[ -f "$sound_file" ]]; then
+            paplay "$sound_file" 2>/dev/null &
+            return 0
+        fi
+    done
+    # Fallback: bell character
+    printf '\a'
+}
+
+notify() {
+    local title="$1"
+    local message="$2"
+    local urgency="${3:-normal}"
+    notify-send -u "$urgency" -a "Pomodoro" -i "alarm-timer" "$title" "$message"
+    play_sound
+}
+
+init_state() {
+    if [[ ! -f "$STATE_FILE" ]]; then
+        cat > "$STATE_FILE" << EOF
+phase=idle
+remaining=0
+paused=0
+completed=0
+start_time=0
+pause_time=0
+EOF
+    fi
+}
+
+read_state() {
+    init_state
+    source "$STATE_FILE"
+}
+
+save_state() {
+    cat > "$STATE_FILE" << EOF
+phase=$phase
+remaining=$remaining
+paused=$paused
+completed=$completed
+start_time=$start_time
+pause_time=$pause_time
+EOF
+    # Signal waybar to refresh
+    pkill -RTMIN+10 waybar 2>/dev/null || true
+}
+
+get_phase_duration() {
+    case "$1" in
+        work) echo "$WORK_DURATION" ;;
+        short_break) echo "$SHORT_BREAK" ;;
+        long_break) echo "$LONG_BREAK" ;;
+        *) echo 0 ;;
+    esac
+}
+
+get_phase_name() {
+    case "$1" in
+        work) echo "Work" ;;
+        short_break) echo "Short Break" ;;
+        long_break) echo "Long Break" ;;
+        idle) echo "Idle" ;;
+        *) echo "Unknown" ;;
+    esac
+}
+
+start_phase() {
+    local new_phase="$1"
+    phase="$new_phase"
+    remaining=$(get_phase_duration "$phase")
+    paused=0
+    start_time=$(date +%s)
+    pause_time=0
+    save_state
+    
+    local phase_name
+    phase_name=$(get_phase_name "$phase")
+    local duration_min=$((remaining / 60))
+    notify "Pomodoro" "$phase_name started - $duration_min minutes"
+}
+
+cmd_start() {
+    read_state
+    
+    if [[ "$phase" == "idle" ]]; then
+        start_phase "work"
+    elif [[ "$paused" -eq 1 ]]; then
+        # Resume from pause
+        local now
+        now=$(date +%s)
+        local paused_duration=$((now - pause_time))
+        start_time=$((start_time + paused_duration))
+        paused=0
+        pause_time=0
+        save_state
+        notify "Pomodoro" "$(get_phase_name "$phase") resumed"
+    else
+        echo "Timer already running"
+    fi
+}
+
+cmd_pause() {
+    read_state
+    
+    if [[ "$phase" != "idle" && "$paused" -eq 0 ]]; then
+        paused=1
+        pause_time=$(date +%s)
+        save_state
+        notify "Pomodoro" "$(get_phase_name "$phase") paused" "low"
+    elif [[ "$paused" -eq 1 ]]; then
+        # Toggle: if paused, resume
+        cmd_start
+    fi
+}
+
+cmd_toggle() {
+    read_state
+    
+    if [[ "$phase" == "idle" ]]; then
+        cmd_start
+    elif [[ "$paused" -eq 1 ]]; then
+        cmd_start
+    else
+        cmd_pause
+    fi
+}
+
+cmd_stop() {
+    read_state
+    phase="idle"
+    remaining=0
+    paused=0
+    start_time=0
+    pause_time=0
+    save_state
+    notify "Pomodoro" "Timer stopped" "low"
+}
+
+cmd_skip() {
+    read_state
+    
+    if [[ "$phase" == "idle" ]]; then
+        echo "No active timer to skip"
+        return
+    fi
+    
+    # Transition to next phase
+    case "$phase" in
+        work)
+            completed=$((completed + 1))
+            if (( completed % POMODOROS_UNTIL_LONG == 0 )); then
+                start_phase "long_break"
+            else
+                start_phase "short_break"
+            fi
+            ;;
+        short_break|long_break)
+            start_phase "work"
+            ;;
+    esac
+}
+
+cmd_reset() {
+    rm -f "$STATE_FILE"
+    init_state
+    pkill -RTMIN+10 waybar 2>/dev/null || true
+    echo "Pomodoro reset"
+}
+
+cmd_tick() {
+    # Called by status script to check for phase completion
+    read_state
+    
+    if [[ "$phase" == "idle" || "$paused" -eq 1 ]]; then
+        return
+    fi
+    
+    local now elapsed
+    now=$(date +%s)
+    elapsed=$((now - start_time))
+    remaining=$(( $(get_phase_duration "$phase") - elapsed ))
+    
+    if (( remaining <= 0 )); then
+        # Phase completed
+        case "$phase" in
+            work)
+                completed=$((completed + 1))
+                notify "Pomodoro Complete!" "Time for a break! ($completed completed)" "critical"
+                if (( completed % POMODOROS_UNTIL_LONG == 0 )); then
+                    start_phase "long_break"
+                else
+                    start_phase "short_break"
+                fi
+                ;;
+            short_break|long_break)
+                notify "Break Over!" "Time to focus!" "critical"
+                start_phase "work"
+                ;;
+        esac
+    fi
+}
+
+cmd_status() {
+    read_state
+    cmd_tick 2>/dev/null || true
+    read_state
+    
+    echo "phase=$phase"
+    echo "remaining=$remaining"
+    echo "paused=$paused"
+    echo "completed=$completed"
+}
+
+# Main
+case "${1:-status}" in
+    start) cmd_start ;;
+    pause) cmd_pause ;;
+    toggle) cmd_toggle ;;
+    stop) cmd_stop ;;
+    skip) cmd_skip ;;
+    reset) cmd_reset ;;
+    tick) cmd_tick ;;
+    status) cmd_status ;;
+    *)
+        echo "Usage: omarchy-pomodoro [start|pause|toggle|stop|skip|reset|status]"
+        exit 1
+        ;;
+esac

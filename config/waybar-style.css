@@ -1,0 +1,25 @@
+#custom-pomodoro {
+  min-width: 60px;
+  margin: 0 7.5px;
+}
+
+#custom-pomodoro.idle {
+  min-width: 0;
+  opacity: 0.6;
+}
+
+#custom-pomodoro.work {
+  color: #d14d41;
+}
+
+#custom-pomodoro.short_break {
+  color: #879a39;
+}
+
+#custom-pomodoro.long_break {
+  color: #4385be;
+}
+
+#custom-pomodoro.paused {
+  color: #d0a215;
+}
