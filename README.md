@@ -12,6 +12,16 @@ A simple Pomodoro timer for [Waybar](https://github.com/Alexays/Waybar) on [Omar
 - 🎨 Color-coded states (work=red, break=green/blue, paused=yellow)
 - 🖱️ Full mouse control from waybar
 
+![screenshot-2026-01-27_20-06-33](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-06-33.png)
+
+![screenshot-2026-01-27_20-06-45](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-06-45.png)
+
+![screenshot-2026-01-27_20-07-01](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-07-01.png)
+
+![screenshot-2026-01-27_20-07-21](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-07-21.png)
+
+
+
 ## Installation
 
 ```bash
