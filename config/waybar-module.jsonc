@@ -1,10 +1,10 @@
 "custom/pomodoro": {
   "format": "{}",
-  "exec": "omarchy-pomodoro-status",
+  "exec": "$HOME/.local/bin/omarchy-pomodoro-status",
   "return-type": "json",
   "interval": 1,
   "signal": 10,
-  "on-click": "omarchy-pomodoro toggle",
-  "on-click-right": "omarchy-pomodoro stop",
-  "on-click-middle": "omarchy-pomodoro skip"
+  "on-click": "$HOME/.local/bin/omarchy-pomodoro toggle",
+  "on-click-right": "$HOME/.local/bin/omarchy-pomodoro stop",
+  "on-click-middle": "$HOME/.local/bin/omarchy-pomodoro skip"
 }
