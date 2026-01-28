@@ -11,6 +11,7 @@ A simple Pomodoro timer for [Waybar](https://github.com/Alexays/Waybar) on [Omar
 - 🔔 Desktop notifications with sound
 - 🎨 Color-coded states (work=red, break=green/blue, paused=yellow)
 - 🖱️ Full mouse control from waybar
+- 😴 Auto-stop on laptop lid close/sleep/hibernate
 
 ![screenshot-2026-01-27_20-06-33](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-06-33.png)
 
@@ -118,6 +119,15 @@ WORK_DURATION=$((25 * 60))      # 25 minutes
 SHORT_BREAK=$((5 * 60))         # 5 minutes
 LONG_BREAK=$((15 * 60))         # 15 minutes
 POMODOROS_UNTIL_LONG=4          # Long break after 4 pomodoros
+```
+
+## Sleep/Hibernate Hook
+
+The timer automatically stops when your laptop goes to sleep or hibernates. To enable this feature, install the systemd sleep hook:
+
+```bash
+sudo cp systemd/pomodoro-sleep-hook /lib/systemd/system-sleep/
+sudo chmod +x /lib/systemd/system-sleep/pomodoro-sleep-hook
 ```
 
 ## License

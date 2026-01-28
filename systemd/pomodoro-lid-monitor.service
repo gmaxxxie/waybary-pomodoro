@@ -1,0 +1,12 @@
+[Unit]
+Description=Stop pomodoro timer on lid close
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/pomodoro-lid-monitor
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

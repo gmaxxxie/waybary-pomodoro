@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+STATE_FILE="/tmp/pomodoro-state"
+
+case "$1" in
+    pre)
+        if [[ -f "$STATE_FILE" ]]; then
+            cat > "$STATE_FILE" <<EOF
+phase=idle
+remaining=0
+paused=0
+completed=0
+start_time=0
+pause_time=0
+EOF
+        fi
+        ;;
+esac
+
+exit 0
