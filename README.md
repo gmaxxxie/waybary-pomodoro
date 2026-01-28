@@ -13,13 +13,13 @@ A simple Pomodoro timer for [Waybar](https://github.com/Alexays/Waybar) on [Omar
 - 🖱️ Full mouse control from waybar
 - 😴 Auto-stop on laptop lid close/sleep/hibernate
 
-![screenshot-2026-01-27_20-06-33](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-06-33.png)
+![screenshot-2026-01-27_20-06-33](https://github.com/gmaxxxie/waybary-pomodoro/tree/master/pic/screenshot-2026-01-27_20-06-33.png)
 
-![screenshot-2026-01-27_20-06-45](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-06-45.png)
+![screenshot-2026-01-27_20-06-45](https://github.com/gmaxxxie/waybary-pomodoro/tree/master/pic/screenshot-2026-01-27_20-06-45.png)
 
-![screenshot-2026-01-27_20-07-01](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-07-01.png)
+![screenshot-2026-01-27_20-07-01](https://github.com/gmaxxxie/waybary-pomodoro/tree/master/pic/screenshot-2026-01-27_20-07-01.png)
 
-![screenshot-2026-01-27_20-07-21](/home/max/Project/waybar-pomodoro/pic/screenshot-2026-01-27_20-07-21.png)
+![screenshot-2026-01-27_20-07-21](https://github.com/gmaxxxie/waybary-pomodoro/tree/master/pic/screenshot-2026-01-27_20-07-21.png)
 
 
 
